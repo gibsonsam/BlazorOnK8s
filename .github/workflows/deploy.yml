@@ -26,16 +26,16 @@ jobs:
         with:
           creds: ${{ env.AZURE_CREDENTIALS }}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v3
 
-      # Terraform
-      - name: Terraform
-        working-directory: infra
-        run: |
-          terraform init
-          terraform plan -out=tfplan
-          terraform apply -auto-approve tfplan
+      # # Terraform
+      # - name: Terraform
+      #   working-directory: infra
+      #   run: |
+      #     terraform init
+      #     terraform plan -out=tfplan
+      #     terraform apply -auto-approve tfplan
 
       # Pull kubeconfig from AKS
       - name: Get AKS credentials
