@@ -1,0 +1,55 @@
+name: Build & Deploy with Aspirate
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      ACR_NAME: ${{ secrets.ACR_NAME }}
+      ACR_REPO: ${{ secrets.ACR_REPO }}
+      ACR_SERVER: ${{ secrets.ACR_SERVER }}
+      AKS_NAME: ${{ secrets.AKS_NAME }}
+      AKS_RG: ${{ secrets.AKS_RG }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+    steps:
+      # Checkout source
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Log in to Azure
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ env.AZURE_CREDENTIALS }}
+
+      # Terraform
+      - name: Terraform
+        working-directory: infra
+        run: |
+          terraform init
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
+
+      # Pull kubeconfig from AKS
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials --resource-group $AKS_RG --name $AKS_NAME --overwrite-existing
+
+      # Log in to ACR
+      - name: Azure Container Registry Login
+        run: az acr login --name $ACR_NAME
+
+      # Install Aspirate CLI
+      - name: Install Aspirate
+        run: dotnet tool install --global Aspirate.Tool
+
+      # Aspirate init
+      - name: Aspirate Init
+        run: | 
+          aspirate init --non-interactive --container-registry $ACR_SERVER
+          aspirate generate --non-interactive --disable-secrets --include-dashboard --image-pull-policy Always --container-repository-prefix $ACR_REPO
+          aspirate apply --non-interactive --disable-secrets --kube-context $AKS_NAME

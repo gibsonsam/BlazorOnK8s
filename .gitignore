@@ -294,3 +294,9 @@ __pycache__/
 *.tfstate.backup
 *.tfvars
 *.tfvars.json
+
+# Aspirate
+aspirate-output/
+aspirate-state.json
+manifest.json
+aspirate.json
