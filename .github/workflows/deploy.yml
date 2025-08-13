@@ -26,6 +26,9 @@ jobs:
         with:
           creds: ${{ env.AZURE_CREDENTIALS }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
       # Terraform
       - name: Terraform
         working-directory: infra
@@ -49,6 +52,7 @@ jobs:
 
       # Aspirate init
       - name: Aspirate Init
+        working-directory: src/BlazorOnK8s/BlazorOnK8s.AppHost
         run: | 
           aspirate init --non-interactive --container-registry $ACR_SERVER
           aspirate generate --non-interactive --disable-secrets --include-dashboard --image-pull-policy Always --container-repository-prefix $ACR_REPO
