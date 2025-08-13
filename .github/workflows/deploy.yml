@@ -46,14 +46,18 @@ jobs:
       - name: Azure Container Registry Login
         run: az acr login --name $ACR_NAME
 
-      # Install Aspirate CLI
-      - name: Install Aspirate
-        run: dotnet tool install --global Aspirate.Tool
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore .NET Tools
+        run: dotnet tool restore
 
       # Aspirate init
       - name: Aspirate Init
-        working-directory: src/BlazorOnK8s/BlazorOnK8s.AppHost
+        working-directory: src/BlazorOnK8s.AppHost
         run: | 
-          aspirate init --non-interactive --container-registry $ACR_SERVER
-          aspirate generate --non-interactive --disable-secrets --include-dashboard --image-pull-policy Always --container-repository-prefix $ACR_REPO
-          aspirate apply --non-interactive --disable-secrets --kube-context $AKS_NAME
+          dotnet tool run aspirate init --non-interactive --container-registry $ACR_SERVER
+          dotnet tool run aspirate generate --non-interactive --disable-secrets --include-dashboard --image-pull-policy Always --container-repository-prefix $ACR_REPO
+          dotnet tool run aspirate apply --non-interactive --disable-secrets --kube-context $AKS_NAME
