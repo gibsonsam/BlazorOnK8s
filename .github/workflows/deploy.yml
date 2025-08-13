@@ -59,5 +59,5 @@ jobs:
         working-directory: src/BlazorOnK8s.AppHost
         run: | 
           dotnet tool run aspirate init --non-interactive --container-registry $ACR_SERVER --container-image-tag ${{ github.sha }}
-          dotnet tool run aspirate generate --non-interactive --disable-secrets --include-dashboard --image-pull-policy Always --container-repository-prefix $ACR_REPO
+          dotnet tool run aspirate generate --non-interactive --disable-secrets --include-dashboard --image-pull-policy Always --container-repository-prefix $ACR_REPO --container-image-tag ${{ github.sha }}
           dotnet tool run aspirate apply --non-interactive --disable-secrets --kube-context $AKS_NAME --rolling-restart
