@@ -64,16 +64,16 @@ jobs:
           --verbosity "quiet" --nologo -r "linux-x64"
 
       - name: Generate artifacts with aspire
-        run: dotnet aspire publish
+        run: dotnet aspire publish -o aspirate-output
 
       - name: Patch generated values to exact image
         env:
           IMAGE: ${{ env.ACR_SERVER }}/${{ env.ACR_REPO }}/blazoronk8s:${{ github.sha }}
         run: |
-          sed 's/^\(blazoronk8s_image: \).*$/\${env:IMAGE}/' values.yaml
+          sed 's/^\(blazoronk8s_image: \).*$/\${env:IMAGE}/' ./aspirate-output/values.yaml
 
       - name: Install Helm
         uses: azure/setup-helm@v4.3.0
 
       - name: Helm Deploy
-        run: helm upgrade --install aspire . --namespace default
+        run: helm upgrade --install aspire ./aspirate-output --namespace default
