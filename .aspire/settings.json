@@ -1,0 +1,3 @@
+{
+  "appHostPath": "../src/BlazorOnK8s.AppHost/BlazorOnK8s.AppHost.csproj"
+}

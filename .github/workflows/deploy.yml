@@ -54,10 +54,26 @@ jobs:
       - name: Restore .NET Tools
         run: dotnet tool restore
 
-      # Aspirate init
-      - name: Aspirate Init
-        working-directory: src/BlazorOnK8s.AppHost
-        run: | 
-          dotnet tool run aspirate init --non-interactive --container-registry $ACR_SERVER --container-image-tag ${{ github.sha }}
-          dotnet tool run aspirate generate --non-interactive --disable-secrets --include-dashboard --image-pull-policy Always --container-repository-prefix $ACR_REPO --container-image-tag ${{ github.sha }}
-          dotnet tool run aspirate apply --non-interactive --disable-secrets --kube-context $AKS_NAME --rolling-restart
+      - name: Build and Publish Image
+        run: >
+          dotnet publish src/BlazorOnK8s.AppHost/BlazorOnK8s.AppHost.csproj
+          -t:PublishContainer
+          -p:ContainerRegistry="$ACR_SERVER"
+          -p:ContainerRepository="$ACR_REPO/$ACR_NAME"
+          -p:ContainerImageTag="${{ github.sha }}"
+          --verbosity "quiet" --nologo -r "linux-x64"
+
+      - name: Generate artifacts with aspire
+        run: dotnet aspire publish
+
+      - name: Patch generated values to exact image
+        env:
+          IMAGE: ${{ env.ACR_SERVER }}/${{ env.ACR_REPO }}/blazoronk8s:${{ github.sha }}
+        run: |
+          sed 's/^\(blazoronk8s_image: \).*$/\${env:IMAGE}/' values.yaml
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4.3.0
+
+      - name: Helm Deploy
+        run: helm upgrade --install aspire . --namespace default

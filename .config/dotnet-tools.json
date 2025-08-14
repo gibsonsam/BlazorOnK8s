@@ -2,10 +2,10 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "aspirate": {
-      "version": "9.1.0",
+    "aspire.cli": {
+      "version": "9.4.1",
       "commands": [
-        "aspirate"
+        "aspire"
       ],
       "rollForward": false
     }

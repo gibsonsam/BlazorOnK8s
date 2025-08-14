@@ -1,5 +1,11 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+var k8s = builder.AddKubernetesEnvironment("k8s")
+    .WithProperties(env =>
+    {
+        env.DefaultImagePullPolicy = "Always";
+    });
+
 var db = builder
     .AddSqlServer("mssql")
     .AddDatabase("AppDb");
