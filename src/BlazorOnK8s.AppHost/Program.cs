@@ -6,13 +6,20 @@ var k8s = builder.AddKubernetesEnvironment("k8s")
         env.DefaultImagePullPolicy = "Always";
     });
 
-var db = builder
-    .AddSqlServer("mssql")
-    .AddDatabase("AppDb");
+// var db = builder
+//     .AddSqlServer("mssql")
+//     .AddDatabase("AppDb");
 
 builder
-    .AddProject<Projects.BlazorOnK8s>("blazoronk8s")
-    .WithReference(db)
-    .WaitFor(db);
+    .AddProject<Projects.BlazorOnK8s>("blazoronk8s");
+    // .WithReference(db)
+    // .WaitFor(db);
+    // .WithAnnotation<ContainerImageAnnotation>(new()
+    // {
+    //     Registry = "myaspireregistry.azurecr.io/myaspireregistry",
+    //     Image = "blazoronk8s2",
+    //     Tag = "latest"
+    // }, ResourceAnnotationMutationBehavior.Replace);
 
 builder.Build().Run();
+

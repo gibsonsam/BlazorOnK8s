@@ -70,7 +70,7 @@ jobs:
         env:
           IMAGE: ${{ env.ACR_SERVER }}/${{ env.ACR_REPO }}/blazoronk8s:${{ github.sha }}
         run: |
-          sed 's/^\(blazoronk8s_image: \).*$/\${env:IMAGE}/' ./aspirate-output/values.yaml
+          sed -i "s/blazoronk8s:latest/${IMAGE//\//\\/}/" "aspirate-output/values.yaml"
 
       - name: Install Helm
         uses: azure/setup-helm@v4.3.0
