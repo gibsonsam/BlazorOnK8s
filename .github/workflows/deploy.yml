@@ -57,18 +57,19 @@ jobs:
       - name: Build and Publish Image
         run: >
           dotnet publish src/BlazorOnK8s.AppHost/BlazorOnK8s.AppHost.csproj
+          -c Release
+          -r "linux-x64"
           -t:PublishContainer
-          -p:ContainerRegistry="$ACR_SERVER"
-          -p:ContainerRepository="$ACR_REPO/$ACR_NAME"
+          -p:ContainerRegistry="${ACR_SERVER}"
+          -p:ContainerRepository="${ACR_REPO}"
           -p:ContainerImageTag="${{ github.sha }}"
-          --verbosity "quiet" --nologo -r "linux-x64"
 
       - name: Generate artifacts with aspire
         run: dotnet aspire publish -o aspirate-output
 
       - name: Patch generated values to exact image
         env:
-          IMAGE: ${{ env.ACR_SERVER }}/${{ env.ACR_REPO }}/blazoronk8s:${{ github.sha }}
+          IMAGE: ${{ env.ACR_SERVER }}/${{ env.ACR_REPO }}:${{ github.sha }}
         run: |
           sed -i "s/blazoronk8s:latest/${IMAGE//\//\\/}/" "aspirate-output/values.yaml"
 
