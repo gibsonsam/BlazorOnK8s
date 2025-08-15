@@ -15,6 +15,7 @@ jobs:
       AKS_NAME: ${{ secrets.AKS_NAME }}
       AKS_RG: ${{ secrets.AKS_RG }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      IMAGE_NAME: blazoronk8s
     steps:
       # Checkout source
       - name: Checkout
@@ -38,9 +39,9 @@ jobs:
       #     terraform apply -auto-approve tfplan
 
       # Pull kubeconfig from AKS
-      - name: Get AKS credentials
-        run: |
-          az aks get-credentials --resource-group $AKS_RG --name $AKS_NAME --overwrite-existing
+      # - name: Get AKS credentials
+      #   run: |
+      #     az aks get-credentials --resource-group $AKS_RG --name $AKS_NAME --overwrite-existing
 
       # Log in to ACR
       - name: Azure Container Registry Login
@@ -51,30 +52,32 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore .NET Tools
-        run: dotnet tool restore
-
       - name: Build and Publish Image
-        run: >
-          dotnet publish src/BlazorOnK8s.AppHost/BlazorOnK8s.AppHost.csproj
-          -c Release
-          -r "linux-x64"
-          -t:PublishContainer
-          -p:ContainerRegistry="${ACR_SERVER}"
-          -p:ContainerRepository="${ACR_REPO}"
-          -p:ContainerImageTag="${{ github.sha }}"
-
-      - name: Generate artifacts with aspire
-        run: dotnet aspire publish -o aspirate-output
-
-      - name: Patch generated values to exact image
-        env:
-          IMAGE: ${{ env.ACR_SERVER }}/${{ env.ACR_REPO }}:${{ github.sha }}
         run: |
-          sed -i "s/blazoronk8s:latest/${IMAGE//\//\\/}/" "aspirate-output/values.yaml"
+          dotnet publish src/BlazorOnK8s/BlazorOnK8s.csproj \
+          --configuration Release \
+          --os linux \
+          --arch x64 \
+          --target:PublishContainer \
+          --property:ContainerRegistry=$ACR_SERVER \
+          --property:ContainerRepository=$IMAGE_NAME \
+          --property:ContainerImageTag=${{ github.sha }}
 
-      - name: Install Helm
-        uses: azure/setup-helm@v4.3.0
+      # - name: Generate artifacts with aspire
+      #   run: dotnet aspire publish -o aspirate-output
 
-      - name: Helm Deploy
-        run: helm upgrade --install aspire ./aspirate-output --namespace default
+      # - name: Patch generated values to exact image
+      #   env:
+      #     IMAGE: ${{ env.ACR_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      #   run: |
+      #     sed -i "s/blazoronk8s:latest/${IMAGE//\//\\/}/" "aspirate-output/values.yaml"
+
+      # - name: Install Helm
+      #   uses: azure/setup-helm@v4.3.0
+
+      # - name: Helm Deploy
+      #   env:
+      #     IMAGE: ${{ env.ACR_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      #   run: |
+      #     helm upgrade --install aspire ./aspirate-output --namespace default
+      #     --set parameters.blazoronk8s.blazoronk8s_image=$IMAGE
