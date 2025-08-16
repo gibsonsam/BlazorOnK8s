@@ -48,6 +48,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
     vm_size    = "Standard_B2s"
   }
 
+  web_app_routing {}
+
   identity {
     type = "SystemAssigned"
   }
