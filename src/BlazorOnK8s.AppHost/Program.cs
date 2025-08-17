@@ -18,6 +18,7 @@ builder
         project.ExcludeLaunchProfile = true;
     })
     .WithHttpEndpoint(port: defaultPort, targetPort: defaultPort)
+    .WithReplicas(3)
     .PublishAsKubernetesService((service) =>
     {
         service.WithIngress(port: defaultPort);
