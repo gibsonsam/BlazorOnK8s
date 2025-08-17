@@ -13,7 +13,12 @@ var k8s = builder.AddKubernetesEnvironment("k8s")
 const int defaultPort = 8080;
 
 builder
-    .AddProject<Projects.BlazorOnK8s>("blazoronk8s").PublishAsKubernetesService((service) =>
+    .AddProject<Projects.BlazorOnK8s>("blazoronk8s", configure: static project =>
+    {
+        project.ExcludeLaunchProfile = true;
+    })
+    .WithHttpEndpoint(port: defaultPort, targetPort: defaultPort)
+    .PublishAsKubernetesService((service) =>
     {
         service.WithIngress(port: defaultPort);
     });
